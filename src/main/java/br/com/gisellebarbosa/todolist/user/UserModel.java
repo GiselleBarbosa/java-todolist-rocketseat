@@ -12,7 +12,7 @@ import jakarta.persistence.Id;
 import lombok.Data;
 
 @Data
-@Entity(name = "tb_users")
+@Entity(name = "users")
 public class UserModel {
 
   @Id
