@@ -24,42 +24,45 @@ public class FilterTasksAuth extends OncePerRequestFilter {
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
 
-    // Pegar a autenticação (usuário / senha)
-    var authorization = request.getHeader("Authorization");
+    var servletPath = request.getServletPath();
 
-    var authEncoded = authorization.substring("Basic".length()).trim();
+    if (servletPath.equals("/tasks/")) {
 
-    byte[] authDecode = Base64.getDecoder().decode(authEncoded);
-    var authString = new String(authDecode);
+      // Pegar a autenticação (usuário / senha)
+      var authorization = request.getHeader("Authorization");
 
-    System.out.println("Authorization");
-    System.out.println(authString);
+      var authEncoded = authorization.substring("Basic".length()).trim();
 
-    String[] credentials = authString.split(":");
-    String username = credentials[0];
-    String password = credentials[1];
+      byte[] authDecode = Base64.getDecoder().decode(authEncoded);
 
-    // Validar usuário
+      var authString = new String(authDecode);
 
-    var user = this.userRepository.findByUsername(username);
+      String[] credentials = authString.split(":");
+      String username = credentials[0];
+      String password = credentials[1];
 
-    if (user == null) {
-      response.sendError(401);
-    } else {
+      // Validar usuário
+      var user = this.userRepository.findByUsername(username);
 
-      // Validar senha
-      var passwordVerify = BCrypt.verifyer().verify(password.toCharArray(), user.getPassword());
-
-      if (passwordVerify.verified) {
-
-        filterChain.doFilter(request, response);
-
-      } else {
+      if (user == null) {
         response.sendError(401);
+      } else {
+        // Validar senha
+        var passwordVerify = BCrypt.verifyer().verify(password.toCharArray(), user.getPassword());
+
+        if (passwordVerify.verified) {
+          // Segue viagem
+          request.setAttribute("idUser", user.getId());
+          filterChain.doFilter(request, response);
+        } else {
+          response.sendError(401);
+        }
       }
-      // Autenticação realizada
+    } else {
+      filterChain.doFilter(request, response);
 
     }
+
   }
 
 }
