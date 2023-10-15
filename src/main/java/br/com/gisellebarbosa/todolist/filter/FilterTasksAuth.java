@@ -1,6 +1,7 @@
 package br.com.gisellebarbosa.todolist.filter;
 
 import java.io.IOException;
+import java.util.Base64;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -17,13 +18,29 @@ public class FilterTasksAuth extends OncePerRequestFilter {
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
 
-        //TODO: Pegar a autenticação (usuário / senha)
+    // Pegar a autenticação (usuário / senha)
+    var authorization = request.getHeader("Authorization");
 
-        //TODO: Validar usuário 
+    var authEncoded = authorization.substring("Basic".length()).trim();
 
-        //TODO: Validar senha
+    byte[] authDecode = Base64.getDecoder().decode(authEncoded);
+    var authString = new String(authDecode);
 
-        //TODO: Tudo ok
+    System.out.println("Authorization");
+    System.out.println(authString);
+
+    String[] credentials = authString.split(":");
+    String username = credentials[0];
+    String password = credentials[1];
+
+    System.out.println(username);
+    System.out.println(password);
+
+    // Validar usuário
+
+    // Validar senha
+
+    // TODO: Tudo ok
 
     filterChain.doFilter(request, response);
 
